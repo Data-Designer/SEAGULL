@@ -18,9 +18,9 @@
   <a href="https://github.com/Data-Designer/SEAGULL/issues">
     <img src="https://img.shields.io/github/issues/Data-Designer/SEAGULL">
   </a>
-  <a href="https://github.com/Data-Designer/SEAGULL/graphs/traffic">
+<!--   <a href="https://github.com/Data-Designer/SEAGULL/graphs/traffic">
     <img src="https://visitor-badge.glitch.me/badge?page_id=Data-Designer.SEAGULL">
-  </a>
+  </a> -->
   <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 <a href="https://github.com/Data-Designer/SEAGULL#contributors-"><img src="https://img.shields.io/badge/all_contributors-1-orange.svg"></a>
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
