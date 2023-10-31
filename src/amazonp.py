@@ -11,8 +11,6 @@ from gensim.models import KeyedVectors
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-
-# 转为df
 def get_df(path_s,path_t):
     def parse(path):
         g = gzip.open(path, 'rb')
@@ -52,16 +50,15 @@ def get_df(path_s,path_t):
     return df_s, df_t
 
 
-# 过滤交互数量
 def filterout(df_s, df_t, thre_i, thre_u):
     index_s = df_s[["overall", "asin"]].groupby('asin').count() >= thre_i
-    index_t = df_t[["overall", "asin"]].groupby('asin').count() >= thre_i # 物品至少有x条交互
+    index_t = df_t[["overall", "asin"]].groupby('asin').count() >= thre_i 
     item_s = set(index_s[index_s['overall'] == True].index)
     item_t = set(index_t[index_t['overall'] == True].index)
     df_s = df_s[df_s['asin'].isin(item_s)]
     df_t = df_t[df_t['asin'].isin(item_t)]
 
-    index_s = df_s[["overall", "reviewerID"]].groupby('reviewerID').count() >= thre_u # 至少有x条交互
+    index_s = df_s[["overall", "reviewerID"]].groupby('reviewerID').count() >= thre_u
     index_t = df_t[["overall", "reviewerID"]].groupby('reviewerID').count() >= thre_u
     user_s = set(index_s[index_s['overall'] == True].index)
     user_t = set(index_t[index_t['overall'] == True].index)
@@ -70,11 +67,10 @@ def filterout(df_s, df_t, thre_i, thre_u):
 
     return df_s, df_t
 
-# 重新编码
 def convert_idx(df_s, df_t):
     uiterator = count(1) # start==1
     udict = defaultdict(lambda: next(uiterator)) # https://zhuanlan.zhihu.com/p/443710807
-    [udict[user] for user in df_s["reviewerID"].tolist() + df_t["reviewerID"].tolist()] # 联合编码
+    [udict[user] for user in df_s["reviewerID"].tolist() + df_t["reviewerID"].tolist()] 
     iiterator_s = count(1)
     idict_s = defaultdict(lambda: next(iiterator_s))
     [idict_s[item] for item in df_s["asin"]]
@@ -106,9 +102,6 @@ def convert_idx(df_s, df_t):
         overlap_num_user, overlap_num_user/user_num_s*100, overlap_num_user/user_num_t*100))
 
     return dict(udict), dict(idict_s), dict(idict_t), overlap_user_set, df_s, df_t
-
-
-# 获取review的emb
 
 #get chinese nlp
 nlp = StanfordCoreNLP('/dfs/data/miniconda3/envs/ORec/lib/python3.8/site-packages/stanfordcorenlp/stanford-corenlp-full-2022-07-25',lang='zh')
@@ -155,20 +148,18 @@ def format_str(content, lag):
     return content_str
 
 def merge(row):
-    """review_text处理"""
     str_cleaned = ""
     if row["reviewText"] != "None":
         str_cleaned = format_str(row["reviewText"], 0)
     if str_cleaned=='':
        return ""
     else:
-        str_cleaned = str_cleaned[:20000] # 太长会decode失败
+        str_cleaned = str_cleaned[:20000] 
         words = nlp.word_tokenize(str_cleaned)
         return words
 
 
 def doc_emb_cop(u_file, i_file, vec_num, domain="shop"):
-    """这里使用user/item合计"""
     print("Start!")
     documents = u_file['reviewText'].values.tolist() + \
                 i_file['reviewText'].values.tolist()
@@ -176,7 +167,7 @@ def doc_emb_cop(u_file, i_file, vec_num, domain="shop"):
     for text in documents:
         for token in text:
             frequency[token] += 1
-    # 大于1的数据
+
     texts = [[token for token in text if frequency[token] > 1]
              for text in documents]
     # train the model
@@ -228,20 +219,3 @@ def review_info(df_s, df_t, u_unique_lis, vec_num):
 
 
 
-
-if __name__ == '__main__':
-    # path_s = r"E:\Code\Pycharm\ORec\data\amazon_raw\Movies_and_TV.json.gz"
-    # path_t = r"E:\Code\Pycharm\ORec\data\amazon_raw\CDs_and_Vinyl.json.gz"
-    # df_s, df_t = get_df(path_s, path_t)
-    domain_A, domain_B = 'movie', 'music'
-    df_s = pd.read_csv(r"E:\Code\Pycharm\ORec\data\amazon_raw\Movies_and_TV.csv")
-    df_t = pd.read_csv(r"E:\Code\Pycharm\ORec\data\amazon_raw\CDs_and_Vinyl.csv")
-
-    df_s, df_t = filterout(df_s, df_t, thre_i=30, thre_u=30)  # 按交互数过滤
-    udict, idict_s, idict_t, overlap_user_set, df_s, df_t = convert_idx(df_s, df_t) # old_new
-
-    df_s.to_csv(root_p+'amazon_'+domain_A + r"\ratings_p.csv")
-    df_t.to_csv(root_p+'amazon_'+domain_B + r"\ratings_p.csv")
-
-
-    review_info(df_s, df_t, list(udict.values()), vec_num=64)
