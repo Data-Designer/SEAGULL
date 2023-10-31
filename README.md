@@ -74,7 +74,7 @@ Due to file size limitations, we have not uploaded all of the data. The Amazon d
 
 ```powershell
 # unzip all files into the douban_feature_raw directory
-python doubanp.py # preprocess
+# preprocess could be found in GADTCDR, movie should be 20.
 python main.py # main file
 ```
 
